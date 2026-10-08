@@ -159,13 +159,20 @@ export default function ProjectPage() {
                 Describe your application in plain English.
               </p>
 
-              <button
+              {/* <button
                 onClick={handleBuild}
                 disabled={loading || !prompt.trim()}
                 className="rounded-lg bg-green-700 px-5 py-3 font-medium text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Thinking..." : "Build with AI"}
-              </button>
+              </button> */}
+     <button
+  onClick={handleBuild}
+  disabled={loading || !prompt.trim()}
+  className="relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+>
+  {loading ? "Thinking..." : "✨ Build with AI"}
+</button>
             </div>
 
             {error && (
