@@ -73,6 +73,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AiPlan from "./AiPlan";
 
 export default function ProjectPage() {
   const router = useRouter();
@@ -181,7 +182,7 @@ export default function ProjectPage() {
               </div>
             )}
 
-            {response && (
+            {/* {response && (
               <div className="mt-8 border-t border-gray-200 pt-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Shippable's plan
@@ -191,7 +192,9 @@ export default function ProjectPage() {
                   {response}
                 </div>
               </div>
-            )}
+            )} */}
+
+               <AiPlan response={response} />
           </div>
         </div>
       </section>

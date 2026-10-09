@@ -455,9 +455,11 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="text-sm font-medium text-emerald-100 transition-colors hover:text-white">
+            <Link 
+             href="/login"
+            className="text-sm font-medium text-emerald-100 transition-colors hover:text-white">
               Login
-            </button>
+            </Link>
 
             <Link
               href="/signup"
