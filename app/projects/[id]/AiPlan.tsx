@@ -33,4 +33,4 @@ export default function AiPlan({ response }: AiPlanProps) {
       </div>
     </section>
   );
-}
+} 
