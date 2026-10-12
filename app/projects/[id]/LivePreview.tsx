@@ -133,9 +133,16 @@ export default function LivePreview({ files }: LivePreviewProps) {
           recompileDelay: 500,
         }}
       > */}
-      <SandpackProvider
+      {/* <SandpackProvider
   template="react-ts"
   files={sandpackFiles}
+> */}
+ <SandpackProvider
+  template="react-ts"
+  files={sandpackFiles}
+  customSetup={{
+    entry: "/index.tsx",
+  }}
 >
         <SandpackLayout>
           {/* <SandpackPreview

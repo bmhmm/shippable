@@ -403,6 +403,7 @@ import GeneratedFiles from "./GeneratedFiles";
 import type { GeneratedFile } from "@/lib/ai/code-schema";
 import LivePreview from "./LivePreview";
 import ProjectCodeSearch from "./ProjectCodeSearch";
+import NaturalLanguageEditor from "./NaturalLanguageEditor";
 
 type ApiResponse = {
   response?: string;
@@ -651,6 +652,12 @@ export default function ProjectPage() {
     />
 
     <LivePreview files={files} />
+
+    <NaturalLanguageEditor
+      projectId={projectId}
+      files={files}
+      onFilesUpdated={setFiles}
+    />
 
     <ProjectCodeSearch files={files} />
   </>
