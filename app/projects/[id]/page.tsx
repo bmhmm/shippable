@@ -401,6 +401,8 @@ import { useParams, useRouter } from "next/navigation";
 import AiPlan from "./AiPlan";
 import GeneratedFiles from "./GeneratedFiles";
 import type { GeneratedFile } from "@/lib/ai/code-schema";
+import LivePreview from "./LivePreview";
+import ProjectCodeSearch from "./ProjectCodeSearch";
 
 type ApiResponse = {
   response?: string;
@@ -628,14 +630,31 @@ export default function ProjectPage() {
             </p>
           )}
 
-          {files.length > 0 && (
+          {/* {files.length > 0 && (
+            <>
             <GeneratedFiles
               projectId={projectId}
               summary={summary}
               files={files}
               onFilesSaved={setFiles}
             />
-          )}
+            <LivePreview files={files} />
+            </>
+          )} */}
+          {files.length > 0 && (
+  <>
+    <GeneratedFiles
+      projectId={projectId}
+      summary={summary}
+      files={files}
+      onFilesSaved={setFiles}
+    />
+
+    <LivePreview files={files} />
+
+    <ProjectCodeSearch files={files} />
+  </>
+)}
         </div>
       </section>
     </main>
