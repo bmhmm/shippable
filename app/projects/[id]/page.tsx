@@ -489,6 +489,46 @@ export default function ProjectPage() {
   }, [projectId]);
 
 
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadVersions() {
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/versions`
+      );
+
+      const data = await readApiResponse(response);
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Could not load version history."
+        );
+      }
+
+      if (!cancelled) {
+        setVersions(data.versions ?? []);
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Could not load version history."
+        );
+      }
+    }
+  }
+
+  loadVersions();
+
+  return () => {
+    cancelled = true;
+  };
+}, [projectId]);
+
+
+
   
 async function handleRestoreVersion(versionId: string) {
   const confirmed = window.confirm(
