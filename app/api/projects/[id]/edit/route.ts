@@ -193,6 +193,40 @@ Rules:
       content: file.content,
       updated_at: new Date().toISOString(),
     }));
+ 
+    // Preserve the current files before applying AI changes.
+  const { data: previousFiles, error: currentFilesError } =
+  await supabase
+    .from("generated_files")
+    .select("filename, language, content")
+    .eq("project_id", id);
+
+if (currentFilesError) {
+  return NextResponse.json(
+    { error: "Could not load the current files." },
+    { status: 500 }
+  );
+}
+
+if (previousFiles && previousFiles.length > 0) {
+  const { error: versionError } = await supabase
+    .from("project_file_versions")
+    .insert({
+      project_id: id,
+      label: "Before AI edit",
+      files: previousFiles,
+    });
+
+  if (versionError) {
+    console.error("Version save error:", versionError);
+
+    return NextResponse.json(
+      { error: "Could not save a recovery version." },
+      { status: 500 }
+    );
+  }
+}
+
 
     const { data: savedFiles, error: saveError } = await supabase
       .from("generated_files")
