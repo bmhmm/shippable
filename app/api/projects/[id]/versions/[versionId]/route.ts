@@ -13,7 +13,7 @@ export async function POST(
     const { id, versionId } = await params;
     const supabase = await createClient();
 
-    // 1. Load the selected saved version.
+    
     const { data: version, error: versionError } = await supabase
       .from("project_file_versions")
       .select("files")
@@ -30,7 +30,7 @@ export async function POST(
 
     const files = version.files;
 
-    // 2. Check the saved data before restoring it.
+  
     if (
       !Array.isArray(files) ||
       files.length === 0 ||
@@ -55,13 +55,7 @@ export async function POST(
       );
     }
 
-    // 3. Load the current files so we can remove files
-    // that did not exist in the saved version.
-    // const { data: currentFiles, error: currentFilesError } =
-    //   await supabase
-    //     .from("generated_files")
-    //     .select("filename")
-    //     .eq("project_id", id);
+   
     const { data: currentFiles, error: currentFilesError } =
   await supabase
     .from("generated_files")
@@ -75,7 +69,7 @@ export async function POST(
       );
     }
 
-    // Save the current files before restoring an older version.
+    
 if (currentFiles && currentFiles.length > 0) {
   const { error: backupError } = await supabase
     .from("project_file_versions")
@@ -95,7 +89,7 @@ if (currentFiles && currentFiles.length > 0) {
   }
 }
 
-    // 4. Restore the saved file contents.
+   
     const rows = files.map((file) => ({
       project_id: id,
       filename: file.filename,
@@ -119,7 +113,7 @@ if (currentFiles && currentFiles.length > 0) {
       );
     }
 
-    // 5. Remove files that were added after this version was saved.
+
     const savedNames = new Set(files.map((file) => file.filename));
     const obsoleteFiles = (currentFiles ?? []).filter(
       (file) => !savedNames.has(file.filename)

@@ -55,11 +55,7 @@ export async function POST(
       );
     }
 
-    // const { data: project, error: projectError } = await supabase
-    //   .from("projects")
-    //   .select("id")
-    //   .eq("id", id)
-    //   .maybeSingle();
+  
 
        const { data: project, error: projectError } = await supabase
           .from("projects")
@@ -201,7 +197,7 @@ Rules:
       updated_at: new Date().toISOString(),
     }));
  
-    // Preserve the current files before applying AI changes.
+    
   const { data: previousFiles, error: currentFilesError } =
   await supabase
     .from("generated_files")

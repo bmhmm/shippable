@@ -10,7 +10,7 @@ type AiPlanProps = {
 export default function AiPlan({ response }: AiPlanProps) {
   if (!response) return null;
 
-  // Clean escaped Markdown markers if the AI returns them.
+
   const cleanedResponse = response
     .replace(/\\([#*_`~])/g, "$1");
 

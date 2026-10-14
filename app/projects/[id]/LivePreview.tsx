@@ -18,7 +18,7 @@ function toSandpackFiles(files: GeneratedFile[]) {
   const result: Record<string, { code: string }> = {};
 
   for (const file of files) {
-    // const filename = file.filename.replace(/\\/g, "/");
+    
        const filename = file.filename.replace(/\\/g, "/");
 
     
