@@ -1,10 +1,25 @@
 import { NextResponse } from "next/server";
 import { openai } from "@/lib/ai/client";
 import { SHIPPABLE_SYSTEM_PROMPT } from "@/lib/ai/system-prompt";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+   const supabase = await createClient();
+
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+
+if (authError || !user) {
+  return NextResponse.json(
+    { error: "Please log in to use Shippable AI." },
+    { status: 401 }
+  );
+}
+
+const body = await request.json();
 
     const prompt = body?.prompt;
 
