@@ -31,6 +31,7 @@ export async function GET(
       .from("projects")
       .select("id")
       .eq("id", id)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (projectError) {

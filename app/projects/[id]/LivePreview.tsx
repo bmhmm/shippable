@@ -18,10 +18,10 @@ function toSandpackFiles(files: GeneratedFile[]) {
   const result: Record<string, { code: string }> = {};
 
   for (const file of files) {
-    const filename = file.filename.replace(/\\/g, "/");
+    // const filename = file.filename.replace(/\\/g, "/");
+       const filename = file.filename.replace(/\\/g, "/");
 
-    // Sandpack's React template does not use Next.js App Router.
-    // Map the generated entry page to a React entry point.
+    
     if (filename === "app/page.tsx" || filename === "page.tsx") {
       result["/App.tsx"] = { code: file.content };
     } else if (
@@ -49,7 +49,7 @@ function toSandpackFiles(files: GeneratedFile[]) {
     }
   }
 
-  // Sandpack needs a React entry file and a CSS file.
+  
   if (!result["/App.tsx"]) {
     result["/App.tsx"] = {
       code: `
@@ -124,19 +124,7 @@ export default function LivePreview({ files }: LivePreviewProps) {
         </button>
       </div>
 
-      {/* <SandpackProvider
-        template="react-ts"
-        files={sandpackFiles}
-        options={{
-          externalResources: [],
-          recompileMode: "delayed",
-          recompileDelay: 500,
-        }}
-      > */}
-      {/* <SandpackProvider
-  template="react-ts"
-  files={sandpackFiles}
-> */}
+      
  <SandpackProvider
   template="react-ts"
   files={sandpackFiles}
@@ -145,11 +133,7 @@ export default function LivePreview({ files }: LivePreviewProps) {
   }}
 >
         <SandpackLayout>
-          {/* <SandpackPreview
-            showOpenInCodeSandbox={false}
-            showRefreshButton
-            style={{ height: 560 }}
-          /> */}
+       
          <SandpackPreview
   showOpenInCodeSandbox={false}
   showRefreshButton

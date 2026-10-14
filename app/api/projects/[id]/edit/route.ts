@@ -55,11 +55,18 @@ export async function POST(
       );
     }
 
-    const { data: project, error: projectError } = await supabase
-      .from("projects")
-      .select("id")
-      .eq("id", id)
-      .maybeSingle();
+    // const { data: project, error: projectError } = await supabase
+    //   .from("projects")
+    //   .select("id")
+    //   .eq("id", id)
+    //   .maybeSingle();
+
+       const { data: project, error: projectError } = await supabase
+          .from("projects")
+          .select("id")
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .maybeSingle();
 
     if (projectError || !project) {
       return NextResponse.json(
