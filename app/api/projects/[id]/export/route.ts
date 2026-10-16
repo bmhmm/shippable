@@ -85,13 +85,142 @@ export async function GET(
       );
     }
 
-    const zip = new JSZip();
+    // const zip = new JSZip();
 
-    for (const file of files) {
-      // Preserve the folder structure in the ZIP.
-      zip.file(file.filename, file.content);
+    // for (const file of files) {
+    //   // Preserve the folder structure in the ZIP.
+    //   zip.file(file.filename, file.content);
+    // }
+      const zip = new JSZip();
+
+// Add the user's generated files without overwriting their content.
+for (const file of files) {
+  const filename = file.filename.replace(/\\/g, "/");
+  zip.file(filename, file.content);
+}
+
+// Add the standard Next.js setup files only when missing.
+const existingFiles = new Set(
+  files.map((file) => file.filename.replace(/\\/g, "/"))
+);
+
+const setupFiles: Record<string, string> = {
+  "package.json": JSON.stringify(
+    {
+      name: "shippable-project",
+      version: "1.0.0",
+      private: true,
+      scripts: {
+        dev: "next dev",
+        build: "next build",
+        start: "next start",
+        lint: "eslint .",
+      },
+      dependencies: {
+        next: "^16.3.8",
+        react: "^19.2.0",
+        "react-dom": "^19.2.0",
+      },
+      devDependencies: {
+        typescript: "^5",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        eslint: "^9",
+        "eslint-config-next": "^16.3.8",
+        tailwindcss: "^4",
+        "@tailwindcss/postcss": "^4",
+        postcss: "^8",
+      },
+    },
+    null,
+    2
+  ),
+  "tsconfig.json": JSON.stringify(
+    {
+      compilerOptions: {
+        target: "ES2017",
+        lib: ["dom", "dom.iterable", "esnext"],
+        allowJs: true,
+        skipLibCheck: true,
+        strict: true,
+        noEmit: true,
+        esModuleInterop: true,
+        module: "esnext",
+        moduleResolution: "bundler",
+        resolveJsonModule: true,
+        isolatedModules: true,
+        jsx: "preserve",
+        incremental: true,
+        plugins: [{ name: "next" }],
+        paths: { "@/*": ["./*"] },
+      },
+      include: [
+        "next-env.d.ts",
+        ".next/types/**/*.ts",
+        ".next/dev/types/**/*.ts",
+        "**/*.ts",
+        "**/*.tsx",
+      ],
+      exclude: ["node_modules"],
+    },
+    null,
+    2
+  ),
+  "next.config.ts": `import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {};
+
+export default nextConfig;
+`,
+  "postcss.config.mjs": `const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+`,
+  "eslint.config.mjs": `import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+]);
+
+export default eslintConfig;
+`,
+  ".gitignore": `node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+`,
+};
+
+for (const [filename, content] of Object.entries(setupFiles)) {
+  if (!existingFiles.has(filename)) {
+    zip.file(filename, content);
+  }
+}
+
+// Put app files in the app/ folder if they were saved at the ZIP root.
+for (const filename of ["globals.css", "layout.tsx", "page.tsx"]) {
+  if (existingFiles.has(filename)) {
+    const content = files.find(
+      (file) => file.filename.replace(/\\/g, "/") === filename
+    )?.content;
+
+    if (content !== undefined) {
+      zip.remove(filename);
+      zip.file(`app/${filename}`, content);
     }
-
+  }
+}
     const zipData = await zip.generateAsync({
       type: "uint8array",
       compression: "DEFLATE",
