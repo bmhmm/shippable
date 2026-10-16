@@ -49,6 +49,7 @@ export default function ProjectPage() {
   const [files, setFiles] = useState<GeneratedFile[]>([]);
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
+  const [downloadingZip, setDownloadingZip] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [error, setError] = useState("");
   const [versions, setVersions] = useState<SavedVersion[]>([]);
@@ -251,18 +252,85 @@ async function handleRestoreVersion(versionId: string) {
     }
   }
 
+  
+  async function handleDownloadZip() {
+    setDownloadingZip(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/export`
+      );
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type") ?? "";
+        let message = "Could not download the project ZIP.";
+
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+          message = data.error || message;
+        }
+
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const disposition = response.headers.get("content-disposition");
+      const filename = disposition?.match(/filename="([^"]+)"/)?.[1]
+        ?? "shippable-project.zip";
+
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while downloading the ZIP."
+      );
+    } finally {
+      setDownloadingZip(false);
+    }
+  }
+
+
   return (
     <main className="min-h-screen bg-[#E8F5E9]">
       <header className="border-b border-[#D1E7D5] bg-white">
         <div className="flex h-16 items-center justify-between px-6">
           <h1 className="text-xl font-bold text-gray-900">Shippable</h1>
 
-          <button
+          {/* <button
             onClick={() => router.push("/dashboard")}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
           >
             Dashboard
-          </button>
+          </button> */}
+
+         
+<div className="flex items-center gap-3">
+  <button
+    onClick={handleDownloadZip}
+    disabled={downloadingZip}
+    className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    {downloadingZip ? "Preparing ZIP..." : "Download ZIP"}
+  </button>
+
+  <button
+    onClick={() => router.push("/dashboard")}
+    className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+  >
+    Dashboard
+  </button>
+</div>
+
+
         </div>
       </header>
 
