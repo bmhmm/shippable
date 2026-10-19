@@ -1,21 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { encryptToken } from "@/lib/github/crypto";
 
 export async function GET(request: NextRequest) {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-
-  const code = request.nextUrl.searchParams.get("code");
-  const returnedState = request.nextUrl.searchParams.get("state");
-  const expectedState = request.cookies.get("github_oauth_state")?.value;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const fail = (message: string, status = 400) => {
-    const response = NextResponse.json({ error: message }, { status });
+    const response = NextResponse.json(
+      { error: message },
+      { status }
+    );
+
     response.cookies.delete("github_oauth_state");
     return response;
   };
 
-  if (!clientId || !clientSecret) {
-    return fail("GitHub OAuth environment variables are missing.", 500);
+  if (!user) {
+    return fail("Please sign in to Shippable again.", 401);
+  }
+
+  const params = request.nextUrl.searchParams;
+  const code = params.get("code");
+  const returnedState = params.get("state");
+  const expectedState =
+    request.cookies.get("github_oauth_state")?.value;
+
+  if (params.has("error")) {
+    return fail("GitHub authorization was cancelled or denied.");
   }
 
   if (
@@ -27,16 +40,19 @@ export async function GET(request: NextRequest) {
     return fail("GitHub authorization could not be verified.");
   }
 
-  if (request.nextUrl.searchParams.has("error")) {
-    return fail("GitHub authorization was cancelled or denied.");
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    return fail("GitHub OAuth configuration is missing.", 500);
   }
 
-  const redirectUri = new URL(
-    "/api/github/callback",
-    request.url
-  ).toString();
-
   try {
+    const redirectUri = new URL(
+      "/api/github/callback",
+      request.url
+    ).toString();
+
     const tokenResponse = await fetch(
       "https://github.com/login/oauth/access_token",
       {
@@ -61,25 +77,64 @@ export async function GET(request: NextRequest) {
       return fail("GitHub token exchange failed.");
     }
 
-    const userResponse = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-      cache: "no-store",
-    });
+    const githubResponse = await fetch(
+      "https://api.github.com/user",
+      {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        cache: "no-store",
+      }
+    );
 
-    if (!userResponse.ok) {
+    if (!githubResponse.ok) {
       return fail("Could not verify your GitHub account.");
     }
 
-    const githubUser = await userResponse.json();
+    const githubUser = await githubResponse.json();
 
-    // Temporary verification only: token storage comes next.
+    if (
+      typeof githubUser.login !== "string" ||
+      typeof tokenData.access_token !== "string"
+    ) {
+      return fail("GitHub returned an invalid response.");
+    }
+
+    const expiresAt =
+      typeof tokenData.expires_in === "number"
+        ? new Date(
+            Date.now() + tokenData.expires_in * 1000
+          ).toISOString()
+        : null;
+
+    const admin = createAdminClient();
+
+    const { error } = await admin
+      .from("github_connections")
+      .upsert(
+        {
+          user_id: user.id,
+          github_username: githubUser.login,
+          access_token: encryptToken(tokenData.access_token),
+          refresh_token:
+            typeof tokenData.refresh_token === "string"
+              ? encryptToken(tokenData.refresh_token)
+              : null,
+          token_expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (error) {
+      console.error("GitHub connection storage failed.");
+      return fail("Could not save the GitHub connection.", 500);
+    }
+
     const response = NextResponse.json({
-      message:
-        "GitHub authorization verified. The token has not been saved yet.",
+      message: "GitHub connected successfully.",
       githubUsername: githubUser.login,
     });
 
