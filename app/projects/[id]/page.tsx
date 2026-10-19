@@ -22,6 +22,8 @@ type ApiResponse = {
   files?: GeneratedFile[];
   versions?: SavedVersion[];
   error?: string;
+  repositoryUrl?: string;
+  uploadedFiles?: number;
 };
 
 async function readApiResponse(
@@ -50,6 +52,11 @@ export default function ProjectPage() {
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [pushingToGitHub, setPushingToGitHub] = useState(false);
+  const [githubRepoName, setGithubRepoName] = useState("");
+  const [githubRepoUrl, setGithubRepoUrl] = useState("");
+  const [githubMessage, setGithubMessage] = useState("");
+  const [githubPrivate, setGithubPrivate] = useState(true);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [error, setError] = useState("");
   const [versions, setVersions] = useState<SavedVersion[]>([]);
@@ -299,6 +306,50 @@ async function handleRestoreVersion(versionId: string) {
   }
 
 
+ async function handlePushToGitHub() {
+  const repoName = githubRepoName.trim();
+
+  if (!repoName) {
+    setGithubMessage("Enter a repository name first.");
+    return;
+  }
+
+  setPushingToGitHub(true);
+  setGithubMessage("");
+  setGithubRepoUrl("");
+  setError("");
+
+  try {
+    const response = await fetch(`/api/projects/${projectId}/github`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        repoName,
+        isPrivate: githubPrivate,
+      }),
+    });
+
+    const data = await readApiResponse(response);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Could not push project to GitHub.");
+    }
+
+    setGithubRepoUrl(data.repositoryUrl ?? "");
+    setGithubMessage(
+      `Successfully uploaded ${data.uploadedFiles ?? 0} files to GitHub.`
+    );
+  } catch (error) {
+    setGithubMessage(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong while pushing to GitHub."
+    );
+  } finally {
+    setPushingToGitHub(false);
+  }
+}
+
   return (
     <main className="min-h-screen bg-[#E8F5E9]">
       <header className="border-b border-[#D1E7D5] bg-white">
@@ -334,7 +385,63 @@ async function handleRestoreVersion(versionId: string) {
         </div>
       </header>
 
+<section className="border-b border-[#D1E7D5] bg-white px-6 py-5">
+  <div className="mx-auto flex max-w-7xl flex-col gap-4">
+    <div>
+      <h2 className="text-lg font-bold text-gray-900">
+        GitHub
+      </h2>
+      <p className="mt-1 text-sm text-gray-600">
+        Create a repository and upload your generated project files.
+      </p>
+    </div>
 
+    <div className="flex flex-wrap items-center gap-3">
+      <input
+        value={githubRepoName}
+        onChange={(event) => setGithubRepoName(event.target.value)}
+        placeholder="Repository name"
+        maxLength={100}
+        className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900"
+        aria-label="GitHub repository name"
+      />
+
+      <label className="flex items-center gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={githubPrivate}
+          onChange={(event) => setGithubPrivate(event.target.checked)}
+        />
+        Private repository
+      </label>
+
+      <button
+        onClick={handlePushToGitHub}
+        disabled={pushingToGitHub || !githubRepoName.trim()}
+        className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {pushingToGitHub ? "Pushing..." : "Push to GitHub"}
+      </button>
+    </div>
+
+    {githubMessage && (
+      <p role="status" className="text-sm text-gray-700">
+        {githubMessage}
+      </p>
+    )}
+
+    {githubRepoUrl && (
+      <a
+        href={githubRepoUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm font-medium text-green-800 underline"
+      >
+        Open GitHub repository
+      </a>
+    )}
+  </div>
+</section>
 
       
 <section className="px-6 py-10">
