@@ -133,14 +133,41 @@ export async function GET(request: NextRequest) {
       return fail("Could not save the GitHub connection.", 500);
     }
 
-    const response = NextResponse.json({
-      message: "GitHub connected successfully.",
-      githubUsername: githubUser.login,
-    });
+    // const response = NextResponse.json({
+    //   message: "GitHub connected successfully.",
+    //   githubUsername: githubUser.login,
+    // });
+    const returnTo = request.cookies.get("github_return_to")?.value;
+const safeReturnTo =
+  returnTo?.startsWith("/") && !returnTo.startsWith("//")
+    ? returnTo
+    : "/dashboard";
+
+const successUrl = new URL("/github/success", request.url);
+
+successUrl.searchParams.set("username", githubUser.login);
+successUrl.searchParams.set("returnTo", safeReturnTo);
+
+const response = NextResponse.redirect(successUrl);
+
+response.cookies.delete("github_oauth_state");
+response.cookies.delete("github_return_to");
+
+return response;
 
     response.cookies.delete("github_oauth_state");
     return response;
-  } catch {
-    return fail("Could not complete GitHub authorization.", 502);
-  }
+  // } 
+  
+  // catch {
+  //   return fail("Could not complete GitHub authorization.", 502);
+  // }
+  } catch (error) {
+  console.error("GitHub callback error:", error);
+
+  return NextResponse.json(
+    { error: "Could not complete GitHub authorization." },
+    { status: 502 }
+  );
+}
 }

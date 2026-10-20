@@ -78,17 +78,37 @@ export async function POST(
     // 3. Verify project ownership before reading its files.
     const { data: project, error: projectError } = await supabase
       .from("projects")
-      .select("id, title")
+      .select("id")
       .eq("id", id)
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (projectError || !project) {
-      return NextResponse.json(
-        { error: "Project not found." },
-        { status: 404 }
-      );
-    }
+    // if (projectError || !project) {
+    //   return NextResponse.json(
+    //     { error: "Project not found." },
+    //     { status: 404 }
+    //   );
+    // }
+    if (projectError) {
+  console.error("GitHub project lookup error:", projectError.message);
+
+  return NextResponse.json(
+    { error: "Could not verify project access." },
+    { status: 500 }
+  );
+}
+
+if (!project) {
+  console.error("GitHub project lookup returned no project:", {
+    projectId: id,
+    userId: user.id,
+  });
+
+  return NextResponse.json(
+    { error: "Project not found or access denied." },
+    { status: 404 }
+  );
+}
 
     const { data: generatedFiles, error: filesError } =
       await supabase
@@ -205,9 +225,12 @@ export async function POST(
       },
       body: JSON.stringify({
         name: body.repoName,
+        // description:
+        //   body.description ||
+        //   `Generated with Shippable: ${project.title}`,
         description:
-          body.description ||
-          `Generated with Shippable: ${project.title}`,
+           body.description ||
+           "Generated with Shippable AI Builder",
         private: body.isPrivate !== false,
         auto_init: false,
       }),
@@ -217,6 +240,11 @@ export async function POST(
     const repoData = await repoResponse.json().catch(() => null);
 
     if (!repoResponse.ok) {
+      console.error("GitHub repository creation failed:", {
+  status: repoResponse.status,
+  message: repoData?.message,
+  errors: repoData?.errors,
+});
       if (repoResponse.status === 401) {
         return NextResponse.json(
           { error: "GitHub authorization expired or is invalid. Reconnect GitHub." },
@@ -310,10 +338,18 @@ export async function POST(
       githubUsername: owner,
       uploadedFiles: preparedFiles.length,
     });
-  } catch {
-    return NextResponse.json(
-      { error: "An unexpected error occurred while pushing to GitHub." },
-      { status: 500 }
-    );
-  }
+  // } catch {
+  //   return NextResponse.json(
+  //     { error: "An unexpected error occurred while pushing to GitHub." },
+  //     { status: 500 }
+  //   );
+  // }
+  } catch (error) {
+  console.error("GitHub push unexpected error:", error);
+
+  return NextResponse.json(
+    { error: "An unexpected error occurred while pushing to GitHub." },
+    { status: 500 }
+  );
+}
 }

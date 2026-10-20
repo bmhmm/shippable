@@ -414,7 +414,12 @@ async function handleRestoreVersion(versionId: string) {
         />
         Private repository
       </label>
-
+      <a
+  href="/api/github/connect"
+  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+>
+  Connect GitHub
+</a>
       <button
         onClick={handlePushToGitHub}
         disabled={pushingToGitHub || !githubRepoName.trim()}

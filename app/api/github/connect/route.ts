@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
+
+
+ const referer = request.headers.get("referer");
+let returnTo = "/dashboard";
+
+if (referer) {
+  try {
+    const refererUrl = new URL(referer);
+
+    if (refererUrl.origin === new URL(request.url).origin) {
+      returnTo = refererUrl.pathname + refererUrl.search;
+    }
+  } catch {
+    // Keep the dashboard fallback.
+  }
+}
+
+
   const clientId = process.env.GITHUB_CLIENT_ID;
 
   if (!clientId) {
@@ -27,11 +45,17 @@ if (error || !user) {
     request.url
   ).toString();
 
+  // const params = new URLSearchParams({
+  //   client_id: clientId,
+  //   redirect_uri: redirectUri,
+  //   state,
+  // });
   const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    state,
-  });
+  client_id: clientId,
+  redirect_uri: redirectUri,
+  state,
+  scope: "repo read:user user:email",
+});
 
   const response = NextResponse.redirect(
     `https://github.com/login/oauth/authorize?${params}`
@@ -44,6 +68,13 @@ if (error || !user) {
     path: "/api/github",
     maxAge: 600,
   });
+  response.cookies.set("github_return_to", returnTo, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/api/github",
+  maxAge: 600,
+});
 
   return response;
 }

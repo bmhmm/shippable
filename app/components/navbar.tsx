@@ -47,22 +47,73 @@ export default function Navbar() {
         {/* Right Action Items */}
         <div className="flex items-center gap-3">
           {/* User Initial Avatar Badge */}
-          {userInitial && (
+          {/* {userInitial && (
             <div
               title="Signed in user"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 border border-emerald-300 font-semibold text-emerald-800 shadow-2xs text-sm"
             >
               {userInitial}
             </div>
+          )} */}
+          {/* User Initial Avatar Badge (Matching Logout Button Style) */}
+          {userInitial && (
+            <div
+              title="Signed in user"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-900 bg-emerald-500 font-semibold text-emerald-900 shadow-2xs text-sm"
+            >
+              {userInitial}
+            </div>
           )}
 
           {/* Log Out Button */}
-          <button
+          {/* <button
             onClick={handleLogout}
             className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:text-gray-900 shadow-2xs"
           >
             Log out
+          </button> */}
+          {/* Modern Log Out Button */}
+          {/* <button
+            onClick={handleLogout}
+            className="group flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-2xs transition-all duration-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-95"
+          >
+            <svg
+              className="h-4 w-4 text-gray-400 transition-colors group-hover:text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Log out
+          </button> */}
+          {/* Light Green Normal State with Red Hover */}
+          <button
+            onClick={handleLogout}
+            className="group flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-900 shadow-2xs transition-all duration-200 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-95"
+          >
+            <svg
+              className="h-4 w-4 text-emerald-600 transition-colors group-hover:text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Log out
           </button>
+         
+         
         </div>
       </div>
     </header>
