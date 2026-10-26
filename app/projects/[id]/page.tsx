@@ -416,7 +416,8 @@ async function handleRestoreVersion(versionId: string) {
       </label>
       <a
   href="/api/github/connect"
-  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+  className="rounded-lg bg-gray-50
+   border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-green-700"
 >
   Connect GitHub
 </a>

@@ -52,7 +52,7 @@ export async function POST(
       );
     }
 
-    // 2. Validate the request.
+   
     const body = await request.json().catch(() => null);
 
     if (
@@ -75,7 +75,7 @@ export async function POST(
 
     const { id } = await context.params;
 
-    // 3. Verify project ownership before reading its files.
+    
     const { data: project, error: projectError } = await supabase
       .from("projects")
       .select("id")
@@ -83,12 +83,7 @@ export async function POST(
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // if (projectError || !project) {
-    //   return NextResponse.json(
-    //     { error: "Project not found." },
-    //     { status: 404 }
-    //   );
-    // }
+    
     if (projectError) {
   console.error("GitHub project lookup error:", projectError.message);
 
@@ -130,7 +125,7 @@ if (!project) {
       );
     }
 
-    // 4. Validate and prepare every path before creating the repository.
+  
     const preparedFiles: { path: string; content: string }[] = [];
     const seen = new Set<string>();
     let totalChars = 0;
@@ -155,7 +150,7 @@ if (!project) {
         );
       }
 
-      // Match the ZIP export structure for common Next.js root files.
+      
       if (
         ["page.tsx", "layout.tsx", "globals.css"].includes(path)
       ) {
@@ -182,7 +177,129 @@ if (!project) {
       preparedFiles.push({ path, content: file.content });
     }
 
-    // 5. Load and decrypt this user's GitHub token on the server.
+   
+    
+const setupFiles: Record<string, string> = {
+  "package.json": JSON.stringify(
+    {
+      name: "shippable-project",
+      version: "1.0.0",
+      private: true,
+      scripts: {
+        dev: "next dev",
+        build: "next build",
+        start: "next start",
+        lint: "eslint .",
+      },
+      dependencies: {
+        next: "^16.3.8",
+        react: "^19.2.0",
+        "react-dom": "^19.2.0",
+      },
+      devDependencies: {
+        typescript: "^5",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        eslint: "^9",
+        "eslint-config-next": "^16.3.8",
+        tailwindcss: "^4",
+        "@tailwindcss/postcss": "^4",
+        postcss: "^8",
+      },
+    },
+    null,
+    2
+  ),
+
+  "tsconfig.json": JSON.stringify(
+    {
+      compilerOptions: {
+        target: "ES2017",
+        lib: ["dom", "dom.iterable", "esnext"],
+        allowJs: true,
+        skipLibCheck: true,
+        strict: true,
+        noEmit: true,
+        esModuleInterop: true,
+        module: "esnext",
+        moduleResolution: "bundler",
+        resolveJsonModule: true,
+        isolatedModules: true,
+        jsx: "preserve",
+        incremental: true,
+        plugins: [{ name: "next" }],
+        paths: { "@/*": ["./*"] },
+      },
+      include: [
+        "next-env.d.ts",
+        ".next/types/**/*.ts",
+        ".next/dev/types/**/*.ts",
+        "**/*.ts",
+        "**/*.tsx",
+      ],
+      exclude: ["node_modules"],
+    },
+    null,
+    2
+  ),
+
+  "next.config.ts": `import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {};
+
+export default nextConfig;
+`,
+
+  "postcss.config.mjs": `const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+`,
+
+  "eslint.config.mjs": `import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+]);
+
+export default eslintConfig;
+`,
+
+  ".gitignore": `node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+`,
+};
+
+// Add missing setup files without overwriting generated files.
+for (const [filename, content] of Object.entries(setupFiles)) {
+  if (!seen.has(filename)) {
+    preparedFiles.push({ path: filename, content });
+    seen.add(filename);
+    totalChars += content.length;
+  }
+}
+
+// Enforce the size limit, including setup files.
+if (totalChars > MAX_TOTAL_CHARS) {
+  return NextResponse.json(
+    { error: "The generated project is too large to upload." },
+    { status: 400 }
+  );
+}
+
+
     const admin = createAdminClient();
 
     const { data: connection, error: connectionError } = await admin
@@ -216,7 +333,7 @@ if (!project) {
       "X-GitHub-Api-Version": "2022-11-28",
     };
 
-    // 6. Create a private repository by default.
+   
     const repoResponse = await fetch(`${GITHUB_API}/user/repos`, {
       method: "POST",
       headers: {
@@ -225,9 +342,7 @@ if (!project) {
       },
       body: JSON.stringify({
         name: body.repoName,
-        // description:
-        //   body.description ||
-        //   `Generated with Shippable: ${project.title}`,
+      
         description:
            body.description ||
            "Generated with Shippable AI Builder",
@@ -289,7 +404,7 @@ if (!project) {
       );
     }
 
-    // 7. Upload files to the new repository.
+    
     for (const file of preparedFiles) {
       const encodedPath = file.path
         .split("/")
@@ -338,12 +453,7 @@ if (!project) {
       githubUsername: owner,
       uploadedFiles: preparedFiles.length,
     });
-  // } catch {
-  //   return NextResponse.json(
-  //     { error: "An unexpected error occurred while pushing to GitHub." },
-  //     { status: 500 }
-  //   );
-  // }
+  
   } catch (error) {
   console.error("GitHub push unexpected error:", error);
 
