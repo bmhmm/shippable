@@ -17,7 +17,7 @@ export default function AiPlan({ response }: AiPlanProps) {
   return (
     <section className="mt-8 rounded-2xl border border-[#D1E7D5] bg-white p-6 shadow-sm">
       <h2 className="mb-6 text-xl font-bold text-gray-900">
-        Shippable's plan
+        Shippable&apos;s plan
       </h2>
 
       <div className="prose prose-gray max-w-none break-words
