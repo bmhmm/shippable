@@ -61,56 +61,139 @@ export async function POST(request: Request) {
 
     const result = JSON.parse(response.output_text);
 
-    if (
-      !result ||
-      typeof result.summary !== "string" ||
-      !Array.isArray(result.files) ||
-      result.files.length === 0 ||
-      result.files.length > 8
-    ) {
-      return NextResponse.json(
-        { error: "The AI returned an invalid file collection." },
-        { status: 502 }
-      );
-    }
+    // if (
+    //   !result ||
+    //   typeof result.summary !== "string" ||
+    //   !Array.isArray(result.files) ||
+    //   result.files.length === 0 ||
+    //   result.files.length > 8
+    // ) {
+    //   return NextResponse.json(
+    //     { error: "The AI returned an invalid file collection." },
+    //     { status: 502 }
+    //   );
+    // }
 
-    const seenPaths = new Set<string>();
+    // const seenPaths = new Set<string>();
 
-    for (const file of result.files) {
-      if (
-        !file ||
-        typeof file.filename !== "string" ||
-        typeof file.language !== "string" ||
-        typeof file.content !== "string" ||
-        !file.filename.trim() ||
-        !file.content.trim() ||
-        file.content.length > 50000
-      ) {
-        return NextResponse.json(
-          { error: "The AI returned an invalid file." },
-          { status: 502 }
-        );
-      }
+    // for (const file of result.files) {
+    //   if (
+    //     !file ||
+    //     typeof file.filename !== "string" ||
+    //     typeof file.language !== "string" ||
+    //     typeof file.content !== "string" ||
+    //     !file.filename.trim() ||
+    //     !file.content.trim() ||
+    //     file.content.length > 50000
+    //   ) {
+    //     return NextResponse.json(
+    //       { error: "The AI returned an invalid file." },
+    //       { status: 502 }
+    //     );
+    //   }
 
-      const path = file.filename.replace(/\\/g, "/");
-      const parts = path.split("/");
+    //   const path = file.filename.replace(/\\/g, "/");
+    //   const parts = path.split("/");
 
-      if (
-        path.startsWith("/") ||
-        /^[a-zA-Z]:/.test(path) ||
-        parts.some((part: string) => !part || part === "." || part === "..") ||
-        !/^[a-zA-Z0-9._/-]+$/.test(path) ||
-        seenPaths.has(path)
-      ) {
-        return NextResponse.json(
-          { error: "The AI returned an unsafe or duplicate filename." },
-          { status: 502 }
-        );
-      }
+    //   if (
+    //     path.startsWith("/") ||
+    //     /^[a-zA-Z]:/.test(path) ||
+    //     parts.some((part: string) => !part || part === "." || part === "..") ||
+    //     !/^[a-zA-Z0-9._/-]+$/.test(path) ||
+    //     seenPaths.has(path)
+    //   ) {
+    //     return NextResponse.json(
+    //       { error: "The AI returned an unsafe or duplicate filename." },
+    //       { status: 502 }
+    //     );
+    //   }
 
-      seenPaths.add(path);
-      file.filename = path;
-    }
+    //   seenPaths.add(path);
+    //   file.filename = path;
+    // }
+    
+const MAX_FILES = 40;
+const MAX_FILE_BYTES = 50_000;
+const MAX_TOTAL_BYTES = 500_000;
+
+if (
+  !result ||
+  typeof result.summary !== "string" ||
+  !Array.isArray(result.files) ||
+  result.files.length === 0 ||
+  result.files.length > MAX_FILES
+) {
+  return NextResponse.json(
+    {
+      error: `The AI must return between 1 and ${MAX_FILES} valid files.`,
+    },
+    { status: 502 }
+  );
+}
+
+const seenPaths = new Set<string>();
+let totalBytes = 0;
+
+for (const file of result.files) {
+  if (
+    !file ||
+    typeof file.filename !== "string" ||
+    typeof file.language !== "string" ||
+    typeof file.content !== "string" ||
+    !file.filename.trim() ||
+    !file.content.trim()
+  ) {
+    return NextResponse.json(
+      { error: "The AI returned an invalid file." },
+      { status: 502 }
+    );
+  }
+
+  const fileBytes = Buffer.byteLength(file.content, "utf8");
+
+  if (fileBytes > MAX_FILE_BYTES) {
+    return NextResponse.json(
+      { error: "A generated file exceeds the 50 KB limit." },
+      { status: 502 }
+    );
+  }
+
+  totalBytes += fileBytes;
+
+  if (totalBytes > MAX_TOTAL_BYTES) {
+    return NextResponse.json(
+      { error: "Generated source exceeds the 500 KB total limit." },
+      { status: 502 }
+    );
+  }
+
+  const path = file.filename.replace(/\\/g, "/");
+  const parts = path.split("/");
+
+  if (
+    path.startsWith("/") ||
+    /^[a-zA-Z]:/.test(path) ||
+    parts.some(
+      (part: string) => !part || part === "." || part === ".."
+    ) ||
+    !/^[a-zA-Z0-9._/-]+$/.test(path) ||
+    seenPaths.has(path)
+  ) {
+    return NextResponse.json(
+      { error: "The AI returned an unsafe or duplicate filename." },
+      { status: 502 }
+    );
+  }
+
+  seenPaths.add(path);
+  file.filename = path;
+}
+
+return NextResponse.json({
+  summary: result.summary,
+  files: result.files,
+});
+
 
     return NextResponse.json({
       summary: result.summary,
