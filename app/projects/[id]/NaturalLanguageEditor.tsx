@@ -67,7 +67,7 @@ export default function NaturalLanguageEditor({
   }
 
   return (
-    <section className="mt-8 space-y-4 rounded-2xl border border-green-200 bg-white p-5 shadow-sm">
+    <section className="mt-8 space-y-4 rounded-2xl border border-green-200 bg-white p-5 shadow-sm ">
       <div>
         <h2 className="text-xl font-bold text-gray-900">
           Ask Shippable to make changes
@@ -85,7 +85,7 @@ export default function NaturalLanguageEditor({
         rows={4}
         maxLength={4000}
         disabled={loading || files.length === 0}
-        className="w-full resize-y rounded-xl border border-gray-300 p-4 text-sm outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-100 disabled:bg-gray-50"
+        className="w-full resize-y rounded-xl border border-gray-300 p-4 text-gray-600 text-sm outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-100 disabled:bg-gray-50"
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">

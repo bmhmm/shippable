@@ -51,6 +51,7 @@ export default function ProjectPage() {
   const [files, setFiles] = useState<GeneratedFile[]>([]);
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
+  const [generationSeconds, setGenerationSeconds] = useState(0);
   const [downloadingZip, setDownloadingZip] = useState(false);
   const [pushingToGitHub, setPushingToGitHub] = useState(false);
   const [githubRepoName, setGithubRepoName] = useState("");
@@ -227,6 +228,11 @@ async function handleRestoreVersion(versionId: string) {
     if (!prompt.trim()) return;
 
     setGeneratingCode(true);
+    setGenerationSeconds(0);
+const startedAt = Date.now();
+const timer = window.setInterval(() => {
+  setGenerationSeconds(Math.floor((Date.now() - startedAt) / 1000));
+}, 250);
     setError("");
     setSummary("");
     setFiles([]);
@@ -254,8 +260,12 @@ async function handleRestoreVersion(versionId: string) {
       setError(
         error instanceof Error ? error.message : "Something went wrong."
       );
+    // } finally {
+    //   setGeneratingCode(false);
     } finally {
-      setGeneratingCode(false);
+  window.clearInterval(timer);
+  setGeneratingCode(false);
+
     }
   }
 
@@ -537,7 +547,12 @@ async function handleRestoreVersion(versionId: string) {
               disabled={!prompt.trim() || loadingPlan || generatingCode}
               className="rounded-lg bg-green-700 px-5 py-3 font-medium text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {generatingCode ? "Generating files..." : "Generate code"}
+              {/* {generatingCode ? "Generating files..." : "Generate code"} */}
+              {generatingCode
+  ? `Generating files... (${generationSeconds} ${
+      generationSeconds === 1 ? "second" : "seconds"
+    })`
+  : "Generate code"}
             </button>
           </div>
 

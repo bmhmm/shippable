@@ -88,7 +88,7 @@ export default function NewProjectPage() {
                 onChange={(event) => setName(event.target.value)}
                 placeholder="My awesome app"
                 required
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border text-gray-900 border-gray-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
               />
             </div>
 
@@ -107,14 +107,14 @@ export default function NewProjectPage() {
                 placeholder="A task management application where users can create and manage tasks..."
                 rows={5}
                 required
-                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                className="w-full text-gray-900 resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
               />
             </div>
 
             <div>
               <label
                 htmlFor="stack"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-medium text-gray-900"
               >
                 Technology stack
               </label>
@@ -123,7 +123,7 @@ export default function NewProjectPage() {
                 id="stack"
                 value={stack}
                 onChange={(event) => setStack(event.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border text-gray-600 border-gray-300 bg-white px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
               >
                 <option value="Next.js">
                   Next.js + TypeScript + Tailwind + Supabase

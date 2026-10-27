@@ -190,7 +190,7 @@ export default function ProjectCodeSearch({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search functions, variables, text..."
-          className="min-w-0 flex-1 rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          className="min-w-0 flex-1 rounded-lg border border-gray-300 px-4 py-3 text-gray-600 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
         />
 
         <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -248,7 +248,7 @@ export default function ProjectCodeSearch({
           id="search-file"
           value={activeFile?.filename ?? ""}
           onChange={(event) => setSelectedFile(event.target.value)}
-          className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-600 text-sm"
         >
           {files.map((file) => (
             <option key={file.filename} value={file.filename}>
