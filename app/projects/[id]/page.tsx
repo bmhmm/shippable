@@ -586,7 +586,8 @@ const timer = window.setInterval(() => {
             </div>
 
             <div id="live-preview" className="scroll-mt-6">
-              <LivePreview files={files} />
+              {/* <LivePreview files={files} /> */}
+              <LivePreview projectId={projectId} files={files} />
             </div>
 
             <div id="ask-shippable" className="scroll-mt-6">

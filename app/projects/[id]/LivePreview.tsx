@@ -1,164 +1,3 @@
-
-// "use client";
-
-// import { useMemo, useState } from "react";
-// import {
-//   SandpackProvider,
-//   SandpackLayout,
-//   SandpackPreview,
-//   SandpackConsole,
-// } from "@codesandbox/sandpack-react";
-// import type { GeneratedFile } from "@/lib/ai/code-schema";
-
-// type LivePreviewProps = {
-//   files: GeneratedFile[];
-// };
-
-// function toSandpackFiles(files: GeneratedFile[]) {
-//   const result: Record<string, { code: string }> = {};
-
-//   for (const file of files) {
-    
-//        const filename = file.filename.replace(/\\/g, "/");
-
-    
-//     if (filename === "app/page.tsx" || filename === "page.tsx") {
-//       result["/App.tsx"] = { code: file.content };
-//     } else if (
-//       filename === "app/globals.css" ||
-//       filename === "globals.css"
-//     ) {
-//       result["/styles.css"] = { code: file.content };
-//     } else if (
-//       filename.startsWith("components/") ||
-//       filename.startsWith("app/components/")
-//     ) {
-//       result[`/${filename.replace(/^app\//, "")}`] = {
-//         code: file.content,
-//       };
-//     } else if (
-//       filename.endsWith(".tsx") ||
-//       filename.endsWith(".ts") ||
-//       filename.endsWith(".jsx") ||
-//       filename.endsWith(".js") ||
-//       filename.endsWith(".css")
-//     ) {
-//       result[`/${filename.replace(/^app\//, "")}`] = {
-//         code: file.content,
-//       };
-//     }
-//   }
-
-  
-//   if (!result["/App.tsx"]) {
-//     result["/App.tsx"] = {
-//       code: `
-// export default function App() {
-//   return (
-//     <main style={{ padding: 24, fontFamily: "Arial, sans-serif" }}>
-//       <h1>Preview unavailable</h1>
-//       <p>Generate an app/page.tsx file to preview this project.</p>
-//     </main>
-//   );
-// }
-// `,
-//     };
-//   }
-
-//   result["/index.tsx"] = {
-//     code: `
-// import React from "react";
-// import { createRoot } from "react-dom/client";
-// import App from "./App";
-// import "./styles.css";
-
-// createRoot(document.getElementById("root")!).render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>
-// );
-// `,
-//   };
-
-//   if (!result["/styles.css"]) {
-//     result["/styles.css"] = { code: "body { margin: 0; }" };
-//   }
-
-//   return result;
-// }
-
-// export default function LivePreview({ files }: LivePreviewProps) {
-//   const [showConsole, setShowConsole] = useState(false);
-
-//   const sandpackFiles = useMemo(
-//     () => toSandpackFiles(files),
-//     [files]
-//   );
-
-//   if (files.length === 0) {
-//     return (
-//       <section className="mt-8 rounded-2xl border border-[#D1E7D5] bg-white p-6">
-//         <h2 className="text-xl font-bold text-gray-900">Live preview</h2>
-//         <p className="mt-2 text-sm text-gray-600">
-//           Generate and save your application code to preview it here.
-//         </p>
-//       </section>
-//     );
-//   }
-
-//   return (
-//     <section className="mt-8 rounded-2xl border border-[#D1E7D5] bg-white p-4 shadow-sm">
-//       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-//         <div>
-//           <h2 className="text-xl font-bold text-gray-900">Live preview</h2>
-//           <p className="mt-1 text-sm text-gray-600">
-//             Browser sandbox for supported React code.
-//           </p>
-//         </div>
-
-//         <button
-//           onClick={() => setShowConsole((current) => !current)}
-//           className="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
-//         >
-//           {showConsole ? "Hide console" : "Show console"}
-//         </button>
-//       </div>
-
-      
-//  <SandpackProvider
-//   template="react-ts"
-//   files={sandpackFiles}
-//   customSetup={{
-//     entry: "/index.tsx",
-//   }}
-// >
-//         <SandpackLayout>
-       
-//          <SandpackPreview
-//   showOpenInCodeSandbox={false}
-//   showRefreshButton
-//   style={{ height: 560 }}
-// />
-//         </SandpackLayout>
-
-//         {showConsole && (
-//           <div className="mt-4 overflow-hidden rounded-lg border">
-//             <SandpackConsole />
-//           </div>
-//         )}
-//       </SandpackProvider>
-//     </section>
-//   );
-// }
-
-
-
-
-
-
-
-
-
 "use client";
 
 import { useMemo, useState } from "react";
@@ -171,12 +10,18 @@ import {
 import type { GeneratedFile } from "@/lib/ai/code-schema";
 
 type LivePreviewProps = {
+   projectId: string;
   files: GeneratedFile[];
 };
+
+// function normalizeFilename(filename: string) {
+//   return filename.replace(/\\/g, "/").replace(/^\/+/, "");
+// }
 
 function normalizeFilename(filename: string) {
   return filename.replace(/\\/g, "/").replace(/^\/+/, "");
 }
+
 
 function relativeImport(fromFilename: string, target: string) {
   const fromDirectory = fromFilename.split("/").slice(0, -1);
@@ -232,31 +77,26 @@ function toSandpackFiles(files: GeneratedFile[]) {
 
     let content = file.content;
 
-    // Resolve common root aliases such as "@/components/Header".
-//     content = content.replace(
-//       /(["'])@\/([^"']+)\1/g,
-//       (_match, quote: string, target: string) =>
-//         `${quote}${relativeImport(filename, target)}${quote}`
-//     );
-//     // Replace Next.js navigation imports with a preview-compatible shim.
-// content = content.replace(
-//   /(["'])next\/navigation\1/g,
-//   (_match, quote: string) =>
-//     `${quote}${relativeImport(filename, "__shims__/next-navigation")}${quote}`
-// );
 
-// Resolve common root aliases such as "@/components/Header".
 content = content.replace(
   /(["'])@\/([^"']+)\1/g,
   (_match, quote: string, target: string) =>
     `${quote}${relativeImport(filename, target)}${quote}`
 );
 
+
 // Replace Next.js navigation imports with a preview-compatible shim.
 content = content.replace(
   /(["'])next\/navigation\1/g,
   (_match, quote: string) =>
     `${quote}${relativeImport(filename, "__shims__/next-navigation")}${quote}`
+);
+
+// Replace Next.js Link imports with a preview-compatible shim.
+content = content.replace(
+  /(["'])next\/link\1/g,
+  (_match, quote: string) =>
+    `${quote}${relativeImport(filename, "__shims__/next-link")}${quote}`
 );
     result[`/${filename}`] = { code: content };
   }
@@ -294,7 +134,28 @@ export function useParams() {
 }
 `,
 };
+result["/__shims__/next-link.tsx"] = {
+  code: `
+import React from "react";
 
+type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+  href: string;
+  children: React.ReactNode;
+};
+
+export default function Link({
+  href,
+  children,
+  ...props
+}: LinkProps) {
+  return (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  );
+}
+`,
+};
 
 
 
@@ -381,7 +242,38 @@ createRoot(document.getElementById("root")!).render(
   return result;
 }
 
-export default function LivePreview({ files }: LivePreviewProps) {
+export default function LivePreview({
+  projectId,
+  files,
+}: LivePreviewProps) {
+  const [previewLoading, setPreviewLoading] = useState(false);
+const [previewError, setPreviewError] = useState<string | null>(null);
+const [previewFiles, setPreviewFiles] = useState<GeneratedFile[]>([]);
+
+async function runPreview() {
+  setPreviewLoading(true);
+  setPreviewError(null);
+
+  try {
+    const response = await fetch(`/api/projects/${projectId}/preview`, {
+      method: "POST",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to prepare preview.");
+    }
+
+    setPreviewFiles(data.files);
+  } catch (error) {
+    setPreviewError(
+      error instanceof Error ? error.message : "Something went wrong."
+    );
+  } finally {
+    setPreviewLoading(false);
+  }
+}
   const [showConsole, setShowConsole] = useState(false);
 
   const sandpackFiles = useMemo(
@@ -423,6 +315,24 @@ export default function LivePreview({ files }: LivePreviewProps) {
         >
           {showConsole ? "Hide console" : "Show console"}
         </button>
+        <button
+  onClick={runPreview}
+  disabled={previewLoading}
+  className="rounded-lg bg-white px-4 py-2 text-black disabled:opacity-50"
+>
+  {previewLoading ? "Preparing..." : "Run Preview"}
+</button>
+
+
+   {previewError && (
+  <p className="text-sm text-red-400">{previewError}</p>
+)}
+
+{previewFiles.length > 0 && (
+  <p className="text-sm text-green-400">
+    Preview prepared with {previewFiles.length} files.
+  </p>
+)}
       </div>
 
       <SandpackProvider
